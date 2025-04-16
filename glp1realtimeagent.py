@@ -106,8 +106,14 @@ glp1_agent = Agent(
 # Define the main agent.
 agent = Agent(
     name="Assistant",
-    instructions=prompt_with_handoff_instructions(
-        "Greet the user politely. For weather queries, use get_weather; for GLP1 queries, hand off to glp1."
+    instructions=prompt_with_handoff_instructions("""
+        Greet the user politely. For weather queries, use get_weather; for GLP1 queries, hand off to glp1.
+        Personality: upbeat, friendly, persuasive guide
+        Tone: Friendly, clear, and reassuring, creating a calm atmosphere and making the listener feel confident and comfortable.
+        Pronunciation: Clear, articulate, and steady, ensuring each instruction is easily understood while maintaining a natural, conversational flow.
+        Tempo: Speak relatively fast, including brief pauses before and after questions.
+        Emotion: Warm and supportive, conveying empathy and care, ensuring the listener feels guided and safe throughout the journey."""
+
     ),
     model="gpt-4o-mini",
     handoffs=[glp1_agent],
@@ -134,8 +140,8 @@ tools = [
         "type": "function",
         "name": "answer_glp1",
         "description": (
-            "A tool to answer questions about GLP1 drugs used for weight loss and Type 2 Diabetes. "
-            "It should only be used when the query relates specifically to GLP1 drugs and should advise users to consult a healthcare professional for "
+            "A tool to answer questions about medicare prescription payment plan and GLP1 drugs used for weight loss and Type 2 Diabetes. "
+            "It should only be used when the query relates specifically to GLP1 drugs or medicare prescription payment plan and should advise users to consult a healthcare professional for "
             "medical advice if appropriate."
         ),
         "parameters": {
@@ -143,7 +149,7 @@ tools = [
             "properties": {
                 "question": {
                     "type": "string",
-                    "description": "The question about GLP1 drugs that the user has asked."
+                    "description": "The question about medicare prescription payment plan and GLP1 drugs that the user has asked."
                 }
             },
             "required": ["question"]
@@ -180,6 +186,10 @@ async def send_pipeline_events(websocket: WebSocket, subscription: dict, realtim
     Forwards events from the realtime API to ACS.
     Handles audio delta events and function call events.
     """
+    await realtime_conn.response.create(response={
+                        "instructions": "Greet the caller and ask how can i help you ? ",
+                        # You can include additional inference parameters (e.g., temperature) if needed.
+    })
     async for event in realtime_conn:
         if event.type == "response.audio.delta":
             audio_bytes = base64.b64decode(event.delta)
@@ -274,6 +284,7 @@ async def websocket_endpoint(websocket: WebSocket):
             },
             "tools": tools,
             "tool_choice":"auto",
+            "voice":"coral"
         })
         logger.info("Realtime session updated with audio modalities and tool definitions.")
         # async for event in realtime_conn:
