@@ -1,0 +1,7 @@
+openai-agents[voice]
+azure-identity
+azure-search-documents
+langchain_community 
+langchain_openai
+langchain
+fastapi
