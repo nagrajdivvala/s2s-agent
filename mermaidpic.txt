@@ -1,0 +1,47 @@
+flowchart LR
+%% Column 1 – inbound
+A[Inbound Callers<br/>(Providers, Pharmacies,<br/>Partner Bots, Unknown Bots)]
+
+%% Column 2 – carrier-edge verification
+B[Carrier Edge<br/>STIR/SHAKEN<br/>Verification]
+A -->|1. SIP/TDM| B
+
+%% Column 3 – SBC + firewall
+C[SBC&nbsp;+&nbsp;Voice-Firewall<br/>(Robocall / TDoS Filter)]
+B -->|2.| C
+
+%% Column 4 – real-time risk scoring
+D[Real-Time Risk-Scoring<br/>(Pindrop / Verint)]
+C -->|3.&nbsp;Secure&nbsp;SIP-TLS / SRTP| D
+
+%% Decision branch
+D -->|score&nbsp;&lt; 0.2| G
+D -->|0.2&nbsp;≤&nbsp;score&nbsp;≤ 0.7| Y
+D -->|score&nbsp;&gt; 0.7| R
+
+%% Green - bulk API / EDI off-ramp
+G[Bulk&nbsp;API&nbsp;/&nbsp;EDI<br/>(FHIR&nbsp;CoverageEligibilityRequest,<br/>X12&nbsp;270/271,<br/>RTBT)]
+
+%% Yellow - IVR / Gen-AI bot
+Y[IVR&nbsp;/&nbsp;Gen-AI&nbsp;Bot<br/>+ Audio&nbsp;CAPTCHA<br/>+ Voice&nbsp;Biometrics]
+
+%% Red - dropped / fraud queue
+R[Drop&nbsp;/&nbsp;Fraud Queue]
+
+%% Back-end systems
+S[Core Systems<br/>(Eligibility • Claims • Prior-Auth • Accumulators)]
+
+%% Data flows to core systems
+Y -- 5.&nbsp;REST/JSON --> S
+G --> S
+
+%% Styling
+classDef green fill:#D4F8D4,stroke:#333,stroke-width:1px;
+classDef yellow fill:#FFF7C2,stroke:#333,stroke-width:1px;
+classDef red fill:#FFD6D6,stroke:#333,stroke-width:1px;
+classDef blue fill:#E8F4FF,stroke:#333,stroke-width:1px;
+
+class A,B,C,D,S blue;
+class G green;
+class Y yellow;
+class R red;
